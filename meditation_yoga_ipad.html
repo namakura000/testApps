@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>瞑想ヨガタイマー（45分ランダム）</title>
+  <style>
+    :root {
+      --bg: #05060a;
+      --fg: #f5f5f5;
+      --fg-sub: #9ba8b5;
+      --border: #2a3440;
+      --accent: #7fd4ff;
+      --radius: 24px;
+      --w: min(86vw, 420px);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 4px;
+      text-align: center;
+    }
+
+    #pose-name {
+      font-size: clamp(18px, 2.4vw, 22px);
+      margin-bottom: 4px;
+    }
+
+    #pose-desc {
+      font-size: clamp(13px, 2.4vw, 18px);
+      line-height: 1.5;
+      color: var(--fg-sub);
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    #timer {
+      font-size: clamp(26px, 4vw, 34px);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 0;
+    }
+
+    #sub-timer {
+      font-size: clamp(10px, 1.6vw, 12px);
+      color: var(--fg-sub);
+      margin-bottom: 8px;
+    }
+
+    #illustration-wrapper {
+      width: var(--w);
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      background: radial-gradient(circle at top, #202636 0, #05060a 70%);
+      transition: opacity 0.2s ease, border-color 0.2s ease;
+    }
+
+    #illustration-wrapper svg {
+      width: 76%;
+      height: 76%;
+      transition: opacity 0.2s ease;
+    }
+
+    #progress {
+      width: var(--w);
+      height: 4px;
+      background: #202636;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    #progress-inner {
+      width: 0;
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.4s linear;
+    }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 2px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 12px;
+      background: #111726;
+      color: #e2edf7;
+      min-width: 72px;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      background: #151c2b;
+    }
+
+    #status {
+      font-size: 8px;
+      color: #6c7a89;
+      min-height: 10px;
+      margin-bottom: 2px;
+    }
+
+    .end {
+      color: var(--accent);
+    }
+
+    /* ▼ 進捗表示 ▼ */
+    #pose-sequence-wrapper {
+      width: var(--w);
+      margin-top: 2px;
+    }
+
+    #pose-sequence-label {
+      font-size: 9px;
+      color: var(--fg-sub);
+      margin-bottom: 2px;
+      text-align: left;
+    }
+
+    #pose-sequence {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-start;
+    }
+
+    .pose-step {
+      width: calc((var(--w) - 7 * 4px) / 4);
+      max-width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2px 2px 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, border-color 0.2s ease;
+    }
+
+    .pose-step-name {
+      font-size: 7px;
+      color: var(--fg-sub);
+      margin-bottom: 1px;
+      text-align: center;
+      line-height: 1.2;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pose-step-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pose-step-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .pose-step.current {
+      border-color: var(--accent);
+      opacity: 1;
+    }
+
+    .pose-step.current .pose-step-name {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pose-step.next {
+      border-color: #4b5663;
+      opacity: 0.9;
+    }
+
+    .pose-step.done {
+      opacity: 0.25;
+    }
+
+    /* ▼ 開始前状態（待機中：全体暗め） ▼ */
+    body.prestart .pose-step {
+      opacity: 0.18;
+      border-color: #111726;
+    }
+
+    body.prestart .pose-step.current .pose-step-name {
+      color: var(--fg-sub);
+      font-weight: 400;
+    }
+
+    body.prestart #illustration-wrapper {
+      opacity: 0.18;
+      border-color: #111726;
+    }
+
+    body.prestart #illustration-wrapper svg {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div id="pose-name"></div>
+  <div id="pose-desc"></div>
+  <div id="timer">45:00</div>
+  <div id="sub-timer"></div>
+
+  <div id="illustration-wrapper">
+    <div id="illustration"></div>
+  </div>
+
+  <div id="progress">
+    <div id="progress-inner"></div>
+  </div>
+
+  <div id="controls">
+    <button id="start-btn">開始</button>
+    <button id="pause-btn">一時停止</button>
+    <button id="reset-btn">リセット</button>
+  </div>
+  <div id="status"></div>
+
+  <div id="pose-sequence-wrapper">
+    <div id="pose-sequence-label">進捗</div>
+    <div id="pose-sequence"></div>
+  </div>
+
+  <script>
+    const poseTypes = {
+      easy: { name: "安楽座", desc: "楽なあぐらで座り、全身の力を抜いて呼吸を観察。", svg: drawSeatedEasy },
+      easySoft: { name: "ゆったり安楽座", desc: "脚の組み方にこだわらず、安定して座る。", svg: drawSeatedEasySoft },
+      seizaSoft: { name: "やわらか正座", desc: "膝に無理なく座り、骨盤を立てる。", svg: drawSeiza },
+      seizaTall: { name: "正座＋背筋", desc: "背筋を伸ばし、意識をクリアに。", svg: drawSeizaTall },
+      longSit: { name: "長座", desc: "脚を前に伸ばし、脚の感覚を静かに感じる。", svg: drawLongSitting },
+      cobbler: { name: "がっせき", desc: "足裏を合わせて股関節まわりをゆるめる。", svg: drawCobbler },
+      childs: { name: "チャイルドポーズ", desc: "背中全体を休める前屈。", svg: drawChilds },
+      mountain: { name: "山のポーズ", desc: "安定して立ち、全身の軸を感じる。", svg: drawMountain },
+      savasana: { name: "シャヴァーサナ", desc: "全身を預け、何も操作せず観察だけ。", svg: drawSavasana },
+      savasanaOpen: { name: "シャヴァ腕広げ", desc: "腕を開き、胸と肩を解放。", svg: drawSavasanaOpen },
+      supineCobbler: { name: "仰向けがっせき", desc: "仰向けで股関節をゆるめる。", svg: drawSupineCobbler },
+      supineTwist: { name: "仰向けツイスト", desc: "背中と腰をやさしくねじる。", svg: drawSupineTwist },
+      gasRelease: { name: "ガス抜き", desc: "膝を抱えて腰まわりをゆるめる。", svg: drawGasRelease },
+      constructive: { name: "コンストラクティブ", desc: "膝を立てて腰を楽に保つ。", svg: drawConstructiveRest },
+      bridge: { name: "橋のポーズ(やさしめ)", desc: "軽く胸を開き、その後の静止につなぐ。", svg: drawBridge },
+      tableTop: { name: "四つんばい", desc: "ニュートラルな姿勢で体幹を感じる。", svg: drawTableTop },
+      puppy: { name: "子犬のポーズ", desc: "胸を床方向へ伸ばし、前側を開く。", svg: drawPuppy },
+      sideRest: { name: "側臥位リラックス", desc: "横向きで楽に丸まり、呼吸を感じる。", svg: drawSideRest },
+      fetalSide: { name: "側臥胎児姿勢", desc: "小さく丸くなり、起き上がる前の静かな時間。", svg: drawFetalSide },
+      halfR: { name: "半蓮華（右）", desc: "右足を左太ももに。無理はしない。", svg: drawSeatedHalfLotusRight },
+      halfL: { name: "半蓮華（左）", desc: "左足を右太ももに。左右差を観察。", svg: drawSeatedHalfLotusLeft }
+    };
+
+    const slotDurations = [5*60,5*60,5*60,5*60,5*60,5*60,10*60,5*60];
+
+    const slotCandidates = [
+      ["easy","easySoft","seizaSoft","mountain","cobbler","childs"],
+      ["easy","seizaSoft","seizaTall","mountain","cobbler"],
+      ["halfR","halfL","cobbler","easy","easySoft","childs"],
+      ["seizaTall","seizaSoft","mountain","longSit"],
+      ["longSit","childs","cobbler","tableTop"],
+      ["childs","puppy","easySoft","cobbler","longSit"],
+      ["savasana","savasanaOpen","supineCobbler","gasRelease","constructive","supineTwist"],
+      ["sideRest","fetalSide","supineTwist"]
+    ];
+
+    let sessionPoses = [];
+    let totalDuration = 0;
+    let currentPoseIndex = 0;
+    let elapsedTotal = 0;
+    let elapsedInPose = 0;
+    let running = false;
+    let timerId = null;
+
+    let hasStartedOnce = false;
+    let prestartActive = false;
+    let prestartRemaining = 0;
+    let prestartTimerId = null;
+
+    let audioCtx = null;
+
+    const poseNameEl = document.getElementById("pose-name");
+    const poseDescEl = document.getElementById("pose-desc");
+    const timerEl = document.getElementById("timer");
+    const subTimerEl = document.getElementById("sub-timer");
+    const illustEl = document.getElementById("illustration");
+    const progressInnerEl = document.getElementById("progress-inner");
+    const statusEl = document.getElementById("status");
+    const poseSequenceEl = document.getElementById("pose-sequence");
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      return audioCtx;
+    }
+
+    function playBeep(freq = 880, duration = 0.12) {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.15, now + 0.01);
+      gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
+
+    function playStartChangeSE() {
+      playBeep(880, 0.08);
+    }
+
+    function playEndSE() {
+      playBeep(440, 0.12);
+      setTimeout(() => playBeep(660, 0.12), 140);
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createSessionPoses() {
+      const used = new Set();
+      const keysResult = new Array(slotDurations.length);
+
+      function backtrack(index) {
+        if (index === slotDurations.length) return true;
+        const all = slotCandidates[index].slice();
+        const unique = all.filter(k => !used.has(k));
+        const pickFrom = unique.length ? unique : all;
+        shuffle(pickFrom);
+        for (const key of pickFrom) {
+          const wasUsed = used.has(key);
+          if (!wasUsed) used.add(key);
+          keysResult[index] = key;
+          if (backtrack(index + 1)) return true;
+          if (!wasUsed) used.delete(key);
+        }
+        return false;
+      }
+
+      backtrack(0);
+
+      return keysResult.map((key, i) => {
+        const base = poseTypes[key];
+        return {
+          key,
+          name: base.name,
+          desc: base.desc,
+          duration: slotDurations[i],
+          svg: base.svg
+        };
+      });
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function renderPoseSequence(currentIndex) {
+      poseSequenceEl.innerHTML = "";
+      const isPrestart = document.body.classList.contains("prestart");
+
+      sessionPoses.forEach((pose, idx) => {
+        const step = document.createElement("div");
+        step.classList.add("pose-step");
+
+        const nameDiv = document.createElement("div");
+        nameDiv.classList.add("pose-step-name");
+        nameDiv.textContent = pose.name.replace(/（.*?）/g, "");
+        step.appendChild(nameDiv);
+
+        const iconWrap = document.createElement("div");
+        iconWrap.classList.add("pose-step-icon");
+        const iconSvg = pose.svg();
+        iconWrap.appendChild(iconSvg);
+        step.appendChild(iconWrap);
+
+        if (!isPrestart) {
+          if (idx < currentIndex) {
+            step.classList.add("done");
+          } else if (idx === currentIndex) {
+            step.classList.add("current");
+          } else if (idx === currentIndex + 1) {
+            step.classList.add("next");
+          }
+        } else {
+          if (idx === 0) step.classList.add("current");
+        }
+
+        poseSequenceEl.appendChild(step);
+      });
+    }
+
+    function showPose(index) {
+      const pose = sessionPoses[index];
+      poseNameEl.textContent = pose.name;
+      poseDescEl.textContent = pose.desc;
+
+      const remaining = Math.max(totalDuration - elapsedTotal, 0);
+      timerEl.textContent = formatTime(remaining);
+
+      const remainingPose = Math.max(pose.duration - elapsedInPose, 0);
+      subTimerEl.textContent = `この姿勢の残り: ${formatTime(remainingPose)}`;
+
+      const ratio = totalDuration === 0 ? 0 : elapsedTotal / totalDuration;
+      progressInnerEl.style.width = `${ratio * 100}%`;
+
+      illustEl.innerHTML = "";
+      const svg = pose.svg();
+      illustEl.appendChild(svg);
+
+      renderPoseSequence(index);
+    }
+
+    function tick() {
+      if (!running) return;
+
+      elapsedTotal += 1;
+      elapsedInPose += 1;
+
+      if (elapsedTotal >= totalDuration) {
+        clearInterval(timerId);
+        timerId = null;
+        running = false;
+        elapsedTotal = totalDuration;
+        elapsedInPose = sessionPoses[sessionPoses.length - 1].duration;
+        showPose(currentPoseIndex);
+        timerEl.textContent = "00:00";
+        subTimerEl.textContent = "セッション終了";
+        statusEl.textContent = "";
+        statusEl.classList.add("end");
+        playEndSE();
+        return;
+      }
+
+      const currentPose = sessionPoses[currentPoseIndex];
+      if (elapsedInPose >= currentPose.duration && currentPoseIndex < sessionPoses.length - 1) {
+        currentPoseIndex++;
+        elapsedInPose = 0;
+        showPose(currentPoseIndex);
+        playStartChangeSE();
+      } else {
+        showPose(currentPoseIndex);
+      }
+    }
+
+    function initSession() {
+      sessionPoses = createSessionPoses();
+      totalDuration = sessionPoses.reduce((s, p) => s + p.duration, 0);
+      currentPoseIndex = 0;
+      elapsedTotal = 0;
+      elapsedInPose = 0;
+      statusEl.textContent = "";
+      statusEl.classList.remove("end");
+      document.body.classList.add("prestart");
+      showPose(currentPoseIndex);
+    }
+
+    function startCore(isInitial) {
+      if (running || elapsedTotal >= totalDuration) return;
+      running = true;
+      document.body.classList.remove("prestart");
+      if (!timerId) timerId = setInterval(tick, 1000);
+      if (isInitial) playStartChangeSE();
+    }
+
+    function start() {
+      if (running || elapsedTotal >= totalDuration) return;
+
+      if (!hasStartedOnce && elapsedTotal === 0) {
+        if (prestartActive) return;
+        if (!sessionPoses.length) initSession();
+
+        prestartActive = true;
+        prestartRemaining = 10;
+        statusEl.textContent = `開始まで ${prestartRemaining}秒`;
+
+        if (prestartTimerId) clearInterval(prestartTimerId);
+        prestartTimerId = setInterval(() => {
+          prestartRemaining--;
+          if (prestartRemaining > 0) {
+            statusEl.textContent = `開始まで ${prestartRemaining}秒`;
+          } else {
+            clearInterval(prestartTimerId);
+            prestartTimerId = null;
+            prestartActive = false;
+            hasStartedOnce = true;
+            statusEl.textContent = "";
+            startCore(true);
+          }
+        }, 1000);
+      } else {
+        if (prestartActive) return;
+        startCore(false);
+      }
+    }
+
+    function pause() {
+      if (prestartActive) {
+        prestartActive = false;
+        if (prestartTimerId) clearInterval(prestartTimerId);
+        prestartTimerId = null;
+        statusEl.textContent = "一時停止中";
+        return;
+      }
+      running = false;
+      statusEl.textContent = "一時停止中";
+    }
+
+    function reset() {
+      running = false;
+      if (timerId) clearInterval(timerId);
+      if (prestartTimerId) clearInterval(prestartTimerId);
+      timerId = null;
+      prestartTimerId = null;
+      prestartActive = false;
+      hasStartedOnce = false;
+
+      sessionPoses = [];
+      totalDuration = 0;
+      currentPoseIndex = 0;
+      elapsedTotal = 0;
+      elapsedInPose = 0;
+      statusEl.textContent = "リセット";
+      statusEl.classList.remove("end");
+      document.body.classList.add("prestart");
+
+      initSession();
+    }
+
+    document.getElementById("start-btn").addEventListener("click", () => {
+      const ctx = getAudioCtx();
+      if (ctx && ctx.state === "suspended") ctx.resume();
+      start();
+    });
+
+    document.getElementById("pause-btn").addEventListener("click", pause);
+    document.getElementById("reset-btn").addEventListener("click", reset);
+
+    function baseSvg() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 100 100");
+      svg.setAttribute("aria-hidden", "true");
+      return svg;
+    }
+
+    function addCircle(svg, cx, cy, r) {
+      const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      c.setAttribute("cx", cx);
+      c.setAttribute("cy", cy);
+      c.setAttribute("r", r);
+      c.setAttribute("fill", "#7fd4ff");
+      svg.appendChild(c);
+    }
+
+    function addLine(svg, x1, y1, x2, y2, w = 3) {
+      const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      l.setAttribute("x1", x1);
+      l.setAttribute("y1", y1);
+      l.setAttribute("x2", x2);
+      l.setAttribute("y2", y2);
+      l.setAttribute("stroke", "#7fd4ff");
+      l.setAttribute("stroke-width", w);
+      l.setAttribute("stroke-linecap", "round");
+      svg.appendChild(l);
+    }
+
+    function drawSeatedEasy() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 22, 7);
+      addLine(svg, 50, 30, 50, 50);
+      addLine(svg, 50, 38, 35, 48);
+      addLine(svg, 50, 38, 65, 48);
+      addLine(svg, 40, 50, 32, 64);
+      addLine(svg, 60, 50, 68, 64);
+      addLine(svg, 32, 64, 68, 64);
+      return svg;
+    }
+
+    function drawSeatedEasySoft() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 24, 7);
+      addLine(svg, 50, 31, 50, 52);
+      addLine(svg, 50, 39, 36, 50);
+      addLine(svg, 50, 39, 64, 50);
+      addLine(svg, 42, 52, 34, 64);
+      addLine(svg, 58, 52, 66, 64);
+      addLine(svg, 34, 64, 66, 64);
+      return svg;
+    }
+
+    function drawSeatedHalfLotusRight() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 22, 7);
+      addLine(svg, 50, 30, 50, 50);
+      addLine(svg, 50, 38, 35, 48);
+      addLine(svg, 50, 38, 65, 48);
+      addLine(svg, 40, 50, 60, 60);
+      addLine(svg, 60, 60, 70, 64);
+      addLine(svg, 45, 54, 30, 64);
+      return svg;
+    }
+
+    function drawSeatedHalfLotusLeft() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 22, 7);
+      addLine(svg, 50, 30, 50, 50);
+      addLine(svg, 50, 38, 35, 48);
+      addLine(svg, 50, 38, 65, 48);
+      addLine(svg, 60, 50, 40, 60);
+      addLine(svg, 40, 60, 30, 64);
+      addLine(svg, 55, 54, 70, 64);
+      return svg;
+    }
+
+    function drawSeiza() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 20, 7);
+      addLine(svg, 50, 27, 50, 48);
+      addLine(svg, 50, 34, 40, 44);
+      addLine(svg, 50, 34, 60, 44);
+      addLine(svg, 44, 48, 44, 64);
+      addLine(svg, 56, 48, 56, 64);
+      addLine(svg, 40, 64, 60, 64);
+      return svg;
+    }
+
+    function drawSeizaTall() {
+      const svg = drawSeiza();
+      addLine(svg, 50, 8, 50, 27, 1.5);
+      return svg;
+    }
+
+    function drawLongSitting() {
+      const svg = baseSvg();
+      addCircle(svg, 40, 22, 7);
+      addLine(svg, 40, 29, 40, 48);
+      addLine(svg, 40, 34, 32, 44);
+      addLine(svg, 40, 34, 48, 44);
+      addLine(svg, 40, 48, 70, 48);
+      return svg;
+    }
+
+    function drawCobbler() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 22, 7);
+      addLine(svg, 50, 30, 50, 46);
+      addLine(svg, 42, 46, 35, 60);
+      addLine(svg, 58, 46, 65, 60);
+      addLine(svg, 40, 60, 60, 60);
+      return svg;
+    }
+
+    function drawChilds() {
+      const svg = baseSvg();
+      addCircle(svg, 40, 40, 5);
+      addLine(svg, 45, 40, 60, 40);
+      addLine(svg, 35, 45, 30, 55);
+      addLine(svg, 50, 45, 55, 55);
+      return svg;
+    }
+
+    function drawMountain() {
+      const svg = baseSvg();
+      addCircle(svg, 50, 18, 6);
+      addLine(svg, 50, 24, 50, 52);
+      addLine(svg, 50, 30, 38, 44);
+      addLine(svg, 50, 30, 62, 44);
+      addLine(svg, 50, 52, 42, 74);
+      addLine(svg, 50, 52, 58, 74);
+      return svg;
+    }
+
+    function drawSavasana() {
+      const svg = baseSvg();
+      addCircle(svg, 20, 60, 5);
+      addLine(svg, 25, 60, 60, 60);
+      addLine(svg, 30, 56, 35, 52);
+      addLine(svg, 30, 64, 35, 68);
+      return svg;
+    }
+
+    function drawSavasanaOpen() {
+      const svg = baseSvg();
+      addCircle(svg, 20, 58, 5);
+      addLine(svg, 25, 58, 60, 58);
+      addLine(svg, 30, 52, 40, 46);
+      addLine(svg, 30, 64, 40, 70);
+      return svg;
+    }
+
+    function drawSupineCobbler() {
+      const svg = baseSvg();
+      addCircle(svg, 22, 60, 4);
+      addLine(svg, 26, 60, 46, 60);
+      addLine(svg, 46, 60, 56, 55);
+      addLine(svg, 56, 55, 64, 60);
+      return svg;
+    }
+
+    function drawSupineTwist() {
+      const svg = baseSvg();
+      addCircle(svg, 24, 56, 4);
+      addLine(svg, 28, 56, 44, 56);
+      addLine(svg, 44, 56, 56, 64);
+      return svg;
+    }
+
+    function drawGasRelease() {
+      const svg = baseSvg();
+      addCircle(svg, 30, 54, 4);
+      addLine(svg, 34, 54, 44, 54);
+      addLine(svg, 44, 54, 40, 44);
+      return svg;
+    }
+
+    function drawConstructiveRest() {
+      const svg = baseSvg();
+      addCircle(svg, 20, 60, 4);
+      addLine(svg, 24, 60, 40, 60);
+      addLine(svg, 40, 60, 50, 55);
+      addLine(svg, 50, 55, 60, 55);
+      return svg;
+    }
+
+    function drawBridge() {
+      const svg = baseSvg();
+      addCircle(svg, 24, 60, 4);
+      addLine(svg, 28, 60, 40, 55);
+      addLine(svg, 40, 55, 56, 55);
+      addLine(svg, 56, 55, 64, 60);
+      return svg;
+    }
+
+    function drawTableTop() {
+      const svg = baseSvg();
+      addLine(svg, 30, 50, 60, 50);
+      addLine(svg, 30, 50, 30, 65);
+      addLine(svg, 60, 50, 60, 65);
+      addCircle(svg, 28, 44, 3);
+      return svg;
+    }
+
+    function drawPuppy() {
+      const svg = baseSvg();
+      addLine(svg, 30, 50, 60, 50);
+      addLine(svg, 30, 50, 30, 65);
+      addLine(svg, 60, 50, 70, 60);
+      addCircle(svg, 32, 44, 3);
+      return svg;
+    }
+
+    function drawSideRest() {
+      const svg = baseSvg();
+      addCircle(svg, 30, 55, 5);
+      addLine(svg, 35, 55, 55, 60);
+      addLine(svg, 40, 52, 34, 48);
+      addLine(svg, 40, 62, 34, 68);
+      return svg;
+    }
+
+    function drawFetalSide() {
+      const svg = baseSvg();
+      addCircle(svg, 32, 54, 5);
+      addLine(svg, 37, 56, 48, 60);
+      addLine(svg, 48, 60, 52, 64);
+      addLine(svg, 30, 58, 26, 63);
+      return svg;
+    }
+
+    initSession();
+  </script>
+</body>
+</html>
