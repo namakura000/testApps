@@ -6,287 +6,68 @@
   <title>瞑想ヨガタイマー（45分ランダム）</title>
   <style>
     :root {
-      --bg: #05060a;
-      --fg: #f5f5f5;
-      --fg-sub: #9ba8b5;
-      --border: #2a3440;
-      --accent: #7fd4ff;
-      --radius: 24px;
+      --bg: #05060a; --fg: #f5f5f5; --fg-sub: #9ba8b5;
+      --border: #2a3440; --accent: #7fd4ff; --radius: 24px;
       --w: min(86vw, 420px);
     }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{
+      margin:0;padding:16px;font-family:-apple-system,system-ui,BlinkMacSystemFont,sans-serif;
+      background: radial-gradient(circle at top, #070b12 0, #05060a 40%, #020308 100%);
+      color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:100vh;gap:4px;text-align:center;position:relative;overflow:hidden;
     }
-
-    body {
-      margin: 0;
-      padding: 16px;
-      font-family: -apple-system, system-ui, BlinkMacSystemFont, sans-serif;
-      background:
-        radial-gradient(circle at top, #070b12 0, #05060a 40%, #020308 100%);
-      color: var(--fg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      gap: 4px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* ===== 焼き付き防止：背景全面・低コントラストアニメーション ===== */
-
-    /* レイヤー1：大きなぼんやりグラデがゆっくり流れる */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: -25%;
-      pointer-events: none;
+    /* 全画面・低コントラストの焼き付き防止アニメ */
+    body::before, body::after{content:"";position:fixed;inset:-25%;pointer-events:none;z-index:0}
+    body::before{
       background:
         radial-gradient(circle at 0% 0%, rgba(127,212,255,0.035), transparent 65%),
         radial-gradient(circle at 100% 100%, rgba(127,212,255,0.03), transparent 60%),
         radial-gradient(circle at 50% 0%, rgba(180,220,255,0.025), transparent 65%);
-      mix-blend-mode: screen;
-      opacity: 0.5;
-      animation: bgDrift1 40s linear infinite alternate;
-      z-index: 0;
+      mix-blend-mode:screen;opacity:.5;animation:bg1 40s linear infinite alternate;
     }
-
-    /* レイヤー2：ごく薄い帯状グラデが別方向に動く */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: -30%;
-      pointer-events: none;
-      background:
-        linear-gradient(
-          135deg,
-          rgba(255,255,255,0.018) 0%,
-          transparent 40%,
-          rgba(127,212,255,0.018) 70%,
-          transparent 100%
-        );
-      mix-blend-mode: soft-light;
-      opacity: 0.4;
-      animation: bgDrift2 55s linear infinite alternate;
-      z-index: 0;
+    body::after{
+      background: linear-gradient(135deg, rgba(255,255,255,0.018) 0%, transparent 40%, rgba(127,212,255,0.018) 70%, transparent 100%);
+      mix-blend-mode:soft-light;opacity:.4;animation:bg2 55s linear infinite alternate;inset:-30%;
     }
+    @keyframes bg1{0%{transform:translate3d(0,0,0) scale(1.02)}50%{transform:translate3d(10px,-8px,0) scale(1.04)}100%{transform:translate3d(-12px,10px,0) scale(1.03)}}
+    @keyframes bg2{0%{transform:translate3d(-8px,6px,0) rotate(.2deg)}50%{transform:translate3d(6px,-10px,0) rotate(-.2deg)}100%{transform:translate3d(10px,8px,0) rotate(0)}}
+    body>*{position:relative;z-index:1}
 
-    @keyframes bgDrift1 {
-      0%   { transform: translate3d(0, 0, 0) scale(1.02); }
-      50%  { transform: translate3d(10px, -8px, 0) scale(1.04); }
-      100% { transform: translate3d(-12px, 10px, 0) scale(1.03); }
-    }
-
-    @keyframes bgDrift2 {
-      0%   { transform: translate3d(-8px, 6px, 0) rotate(0.2deg); }
-      50%  { transform: translate3d(6px, -10px, 0) rotate(-0.2deg); }
-      100% { transform: translate3d(10px, 8px, 0) rotate(0deg); }
-    }
-
-    /* コンテンツは背景レイヤーの上に固定 */
-    body > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ===== テキスト・UI ===== */
-
-    #pose-name {
-      font-size: clamp(18px, 2.4vw, 22px);
-      margin-bottom: 4px;
-    }
-
-    #pose-desc {
-      font-size: clamp(13px, 2.4vw, 18px);
-      line-height: 1.5;
-      color: var(--fg-sub);
-      margin-bottom: 8px;
-      padding: 0 4px;
-    }
-
-    #timer {
-      font-size: clamp(26px, 4vw, 34px);
-      font-variant-numeric: tabular-nums;
-      margin-bottom: 0;
-    }
-
-    #sub-timer {
-      font-size: clamp(10px, 1.6vw, 12px);
-      color: var(--fg-sub);
-      margin-bottom: 8px;
-    }
-
-    #illustration-wrapper {
-      width: var(--w);
-      aspect-ratio: 1 / 1;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 8px;
+    #pose-name{font-size:clamp(18px,2.4vw,22px);margin-bottom:4px}
+    #pose-desc{font-size:clamp(13px,2.4vw,18px);line-height:1.5;color:var(--fg-sub);margin-bottom:8px;padding:0 4px}
+    #timer{font-size:clamp(26px,4vw,34px);font-variant-numeric:tabular-nums;margin-bottom:0}
+    #sub-timer{font-size:clamp(10px,1.6vw,12px);color:var(--fg-sub);margin-bottom:8px}
+    #illustration-wrapper{
+      width:var(--w);aspect-ratio:1/1;border-radius:var(--radius);border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;margin-bottom:8px;
       background: radial-gradient(circle at top, #202636 0, #05060a 70%);
-      transition: opacity 0.2s ease, border-color 0.2s ease;
+      transition:opacity .2s ease,border-color .2s ease;
     }
-
-    #illustration-wrapper svg {
-      width: 76%;
-      height: 76%;
-      transition: opacity 0.2s ease;
-    }
-
-    #progress {
-      width: var(--w);
-      height: 4px;
-      background: #202636;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 4px;
-    }
-
-    #progress-inner {
-      width: 0;
-      height: 100%;
-      background: var(--accent);
-      transition: width 0.4s linear;
-    }
-
-    #controls {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 2px;
-      justify-content: center;
-    }
-
-    button {
-      padding: 7px 16px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      font-size: 12px;
-      background: #111726;
-      color: #e2edf7;
-      min-width: 72px;
-      touch-action: manipulation;
-    }
-
-    button:active {
-      transform: translateY(1px);
-      background: #151c2b;
-    }
-
-    #status {
-      font-size: 8px;
-      color: #6c7a89;
-      min-height: 10px;
-      margin-bottom: 2px;
-    }
-
-    .end {
-      color: var(--accent);
-    }
-
-    #pose-sequence-wrapper {
-      width: var(--w);
-      margin-top: 2px;
-    }
-
-    #pose-sequence-label {
-      font-size: 9px;
-      color: var(--fg-sub);
-      margin-bottom: 2px;
-      text-align: left;
-    }
-
-    #pose-sequence {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      justify-content: flex-start;
-    }
-
-    .pose-step {
-      width: calc((var(--w) - 7 * 4px) / 4);
-      max-width: 80px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2px 2px 3px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      box-sizing: border-box;
-      opacity: 0.6;
-      transition: opacity 0.2s ease, border-color 0.2s ease;
-    }
-
-    .pose-step-name {
-      font-size: 7px;
-      color: var(--fg-sub);
-      margin-bottom: 1px;
-      text-align: center;
-      line-height: 1.2;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .pose-step-icon {
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .pose-step-icon svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    .pose-step.current {
-      border-color: var(--accent);
-      opacity: 1;
-    }
-
-    .pose-step.current .pose-step-name {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .pose-step.next {
-      border-color: #4b5663;
-      opacity: 0.9;
-    }
-
-    .pose-step.done {
-      opacity: 0.25;
-    }
-
-    /* 開始前：全体暗めにして「まだ」を明示 */
-    body.prestart .pose-step {
-      opacity: 0.18;
-      border-color: #111726;
-    }
-
-    body.prestart .pose-step.current .pose-step-name {
-      color: var(--fg-sub);
-      font-weight: 400;
-    }
-
-    body.prestart #illustration-wrapper {
-      opacity: 0.18;
-      border-color: #111726;
-    }
-
-    body.prestart #illustration-wrapper svg {
-      opacity: 0.7;
-    }
+    #illustration-wrapper svg{width:76%;height:76%;transition:opacity .2s ease}
+    #progress{width:var(--w);height:4px;background:#202636;border-radius:999px;overflow:hidden;margin-bottom:4px}
+    #progress-inner{width:0;height:100%;background:var(--accent);transition:width .4s linear}
+    #controls{display:flex;gap:8px;margin-bottom:2px;justify-content:center}
+    button{padding:7px 16px;border-radius:999px;border:1px solid var(--border);cursor:pointer;font-size:12px;background:#111726;color:#e2edf7;min-width:72px;touch-action:manipulation}
+    button:active{transform:translateY(1px);background:#151c2b}
+    #status{font-size:8px;color:#6c7a89;min-height:10px;margin-bottom:2px}
+    .end{color:var(--accent)}
+    #pose-sequence-wrapper{width:var(--w);margin-top:2px}
+    #pose-sequence-label{font-size:9px;color:var(--fg-sub);margin-bottom:2px;text-align:left}
+    #pose-sequence{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start}
+    .pose-step{width:calc((var(--w) - 7*4px)/4);max-width:80px;display:flex;flex-direction:column;align-items:center;padding:2px 2px 3px;border-radius:8px;border:1px solid var(--border);box-sizing:border-box;opacity:.6;transition:opacity .2s ease,border-color .2s ease}
+    .pose-step-name{font-size:7px;color:var(--fg-sub);margin-bottom:1px;text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .pose-step-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+    .pose-step-icon svg{width:100%;height:100%}
+    .pose-step.current{border-color:var(--accent);opacity:1}
+    .pose-step.current .pose-step-name{color:var(--accent);font-weight:600}
+    .pose-step.next{border-color:#4b5663;opacity:.9}
+    .pose-step.done{opacity:.25}
+    /* 開始前は全体的に暗く */
+    body.prestart .pose-step{opacity:.18;border-color:#111726}
+    body.prestart .pose-step.current .pose-step-name{color:var(--fg-sub);font-weight:400}
+    body.prestart #illustration-wrapper{opacity:.18;border-color:#111726}
+    body.prestart #illustration-wrapper svg{opacity:.7}
   </style>
 </head>
 <body>
@@ -295,13 +76,9 @@
   <div id="timer">45:00</div>
   <div id="sub-timer"></div>
 
-  <div id="illustration-wrapper">
-    <div id="illustration"></div>
-  </div>
+  <div id="illustration-wrapper"><div id="illustration"></div></div>
 
-  <div id="progress">
-    <div id="progress-inner"></div>
-  </div>
+  <div id="progress"><div id="progress-inner"></div></div>
 
   <div id="controls">
     <button id="start-btn">開始</button>
@@ -316,35 +93,32 @@
   </div>
 
   <script>
-    /* ==== ポーズ定義 ==== */
+    /* ====== ポーズ定義（省略なく全部このファイル内） ====== */
     const poseTypes = {
-      easy: { name: "安楽座", desc: "楽なあぐらで座り、全身の力を抜いて呼吸を観察。", svg: drawSeatedEasy },
-      easySoft: { name: "ゆったり安楽座", desc: "脚の組み方にこだわらず、安定して座る。", svg: drawSeatedEasySoft },
-      seizaSoft: { name: "やわらか正座", desc: "膝に無理なく座り、骨盤を立てる。", svg: drawSeiza },
-      seizaTall: { name: "正座＋背筋", desc: "背筋を伸ばし、意識をクリアに。", svg: drawSeizaTall },
-      longSit: { name: "長座", desc: "脚を前に伸ばし、脚の感覚を静かに感じる。", svg: drawLongSitting },
-      cobbler: { name: "がっせき", desc: "足裏を合わせて股関節まわりをゆるめる。", svg: drawCobbler },
-      childs: { name: "チャイルドポーズ", desc: "背中全体を休める前屈。", svg: drawChilds },
-      mountain: { name: "山のポーズ", desc: "安定して立ち、全身の軸を感じる。", svg: drawMountain },
-      savasana: { name: "シャヴァーサナ", desc: "全身を預け、何も操作せず観察だけ。", svg: drawSavasana },
-      savasanaOpen: { name: "シャヴァ腕広げ", desc: "腕を開き、胸と肩を解放。", svg: drawSavasanaOpen },
-      supineCobbler: { name: "仰向けがっせき", desc: "仰向けで股関節をゆるめる。", svg: drawSupineCobbler },
-      supineTwist: { name: "仰向けツイスト", desc: "背中と腰をやさしくねじる。", svg: drawSupineTwist },
-      gasRelease: { name: "ガス抜き", desc: "膝を抱えて腰まわりをゆるめる。", svg: drawGasRelease },
-      constructive: { name: "コンストラクティブ", desc: "膝を立てて腰を楽に保つ。", svg: drawConstructiveRest },
-      bridge: { name: "橋のポーズ(やさしめ)", desc: "軽く胸を開き、その後の静止につなぐ。", svg: drawBridge },
-      tableTop: { name: "四つんばい", desc: "ニュートラルな姿勢で体幹を感じる。", svg: drawTableTop },
-      puppy: { name: "子犬のポーズ", desc: "胸を床方向へ伸ばし、前側を開く。", svg: drawPuppy },
-      sideRest: { name: "側臥位リラックス", desc: "横向きで楽に丸まり、呼吸を感じる。", svg: drawSideRest },
-      fetalSide: { name: "側臥胎児姿勢", desc: "小さく丸くなり、起き上がる前の静かな時間。", svg: drawFetalSide },
-      halfR: { name: "半蓮華（右）", desc: "右足を左太ももに。無理はしない。", svg: drawSeatedHalfLotusRight },
-      halfL: { name: "半蓮華（左）", desc: "左足を右太ももに。左右差を観察。", svg: drawSeatedHalfLotusLeft }
+      easy:{name:"安楽座",desc:"楽なあぐらで座り、全身の力を抜いて呼吸を観察。",svg:drawSeatedEasy},
+      easySoft:{name:"ゆったり安楽座",desc:"脚の組み方にこだわらず、安定して座る。",svg:drawSeatedEasySoft},
+      seizaSoft:{name:"やわらか正座",desc:"膝に無理なく座り、骨盤を立てる。",svg:drawSeiza},
+      seizaTall:{name:"正座＋背筋",desc:"背筋を伸ばし、意識をクリアに。",svg:drawSeizaTall},
+      longSit:{name:"長座",desc:"脚を前に伸ばし、脚の感覚を静かに感じる。",svg:drawLongSitting},
+      cobbler:{name:"がっせき",desc:"足裏を合わせて股関節まわりをゆるめる。",svg:drawCobbler},
+      childs:{name:"チャイルドポーズ",desc:"背中全体を休める前屈。",svg:drawChilds},
+      mountain:{name:"山のポーズ",desc:"安定して立ち、全身の軸を感じる。",svg:drawMountain},
+      savasana:{name:"シャヴァーサナ",desc:"全身を預け、何も操作せず観察だけ。",svg:drawSavasana},
+      savasanaOpen:{name:"シャヴァ腕広げ",desc:"腕を開き、胸と肩を解放。",svg:drawSavasanaOpen},
+      supineCobbler:{name:"仰向けがっせき",desc:"仰向けで股関節をゆるめる。",svg:drawSupineCobbler},
+      supineTwist:{name:"仰向けツイスト",desc:"背中と腰をやさしくねじる。",svg:drawSupineTwist},
+      gasRelease:{name:"ガス抜き",desc:"膝を抱えて腰まわりをゆるめる。",svg:drawGasRelease},
+      constructive:{name:"コンストラクティブ",desc:"膝を立てて腰を楽に保つ。",svg:drawConstructiveRest},
+      bridge:{name:"橋のポーズ(やさしめ)",desc:"軽く胸を開き、その後の静止につなぐ。",svg:drawBridge},
+      tableTop:{name:"四つんばい",desc:"ニュートラルな姿勢で体幹を感じる。",svg:drawTableTop},
+      puppy:{name:"子犬のポーズ",desc:"胸を床方向へ伸ばし、前側を開く。",svg:drawPuppy},
+      sideRest:{name:"側臥位リラックス",desc:"横向きで楽に丸まり、呼吸を感じる。",svg:drawSideRest},
+      fetalSide:{name:"側臥胎児姿勢",desc:"小さく丸くなり、起き上がる前の静かな時間。",svg:drawFetalSide},
+      halfR:{name:"半蓮華（右）",desc:"右足を左太ももに。無理はしない。",svg:drawSeatedHalfLotusRight},
+      halfL:{name:"半蓮華（左）",desc:"左足を右太ももに。左右差を観察。",svg:drawSeatedHalfLotusLeft}
     };
-
-    // 8スロット（5,5,5,5,5,5,10,5 = 45分）
-    const slotDurations = [5*60,5*60,5*60,5*60,5*60,5*60,10*60,5*60];
-
-    const slotCandidates = [
+    const slotDurations=[5*60,5*60,5*60,5*60,5*60,5*60,10*60,5*60];
+    const slotCandidates=[
       ["easy","easySoft","seizaSoft","mountain","cobbler","childs"],
       ["easy","seizaSoft","seizaTall","mountain","cobbler"],
       ["halfR","halfL","cobbler","easy","easySoft","childs"],
@@ -355,567 +129,261 @@
       ["sideRest","fetalSide","supineTwist"]
     ];
 
-    let sessionPoses = [];
-    let totalDuration = 0;
-    let currentPoseIndex = 0;
-    let elapsedTotal = 0;
-    let elapsedInPose = 0;
-    let running = false;
-    let timerId = null;
+    let sessionPoses=[], totalDuration=0, currentPoseIndex=0, elapsedTotal=0, elapsedInPose=0;
+    let running=false, timerId=null;
+    let hasStartedOnce=false, prestartActive=false, prestartRemaining=0, prestartTimerId=null;
 
-    let hasStartedOnce = false;
-    let prestartActive = false;
-    let prestartRemaining = 0;
-    let prestartTimerId = null;
+    let audioCtx=null;
+    let wakeLock=null;           // Screen Wake Lock
+    let noSleep=null;            // NoSleep.js instance
+    let noSleepEnabled=false;
 
-    let audioCtx = null;
-    let wakeLock = null;
+    const poseNameEl=document.getElementById("pose-name");
+    const poseDescEl=document.getElementById("pose-desc");
+    const timerEl=document.getElementById("timer");
+    const subTimerEl=document.getElementById("sub-timer");
+    const illustEl=document.getElementById("illustration");
+    const progressInnerEl=document.getElementById("progress-inner");
+    const statusEl=document.getElementById("status");
+    const poseSequenceEl=document.getElementById("pose-sequence");
 
-    const poseNameEl = document.getElementById("pose-name");
-    const poseDescEl = document.getElementById("pose-desc");
-    const timerEl = document.getElementById("timer");
-    const subTimerEl = document.getElementById("sub-timer");
-    const illustEl = document.getElementById("illustration");
-    const progressInnerEl = document.getElementById("progress-inner");
-    const statusEl = document.getElementById("status");
-    const poseSequenceEl = document.getElementById("pose-sequence");
-
-    /* ==== Audio ==== */
-    function getAudioCtx() {
-      if (!audioCtx) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (AC) audioCtx = new AC();
+    /* ====== Audio ====== */
+    function getAudioCtx(){
+      if(!audioCtx){
+        const AC=window.AudioContext||window.webkitAudioContext;
+        if(AC) audioCtx=new AC();
       }
       return audioCtx;
     }
-
-    function playBeep(freq = 880, duration = 0.12) {
-      const ctx = getAudioCtx();
-      if (!ctx) return;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      const now = ctx.currentTime;
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.35, now + 0.01);
-      gain.gain.linearRampToValueAtTime(0.0001, now + duration);
-      osc.start(now);
-      osc.stop(now + duration + 0.02);
+    function playBeep(freq=880,duration=0.12){
+      const ctx=getAudioCtx(); if(!ctx) return;
+      const osc=ctx.createOscillator(); const gain=ctx.createGain();
+      osc.type="sine"; osc.frequency.value=freq; osc.connect(gain); gain.connect(ctx.destination);
+      const now=ctx.currentTime;
+      gain.gain.setValueAtTime(0.0001,now);
+      gain.gain.linearRampToValueAtTime(0.35,now+0.01);
+      gain.gain.linearRampToValueAtTime(0.0001,now+duration);
+      osc.start(now); osc.stop(now+duration+0.02);
     }
+    const playStartChangeSE=()=>playBeep(880,0.09);
+    function playEndSE(){ playBeep(440,0.12); setTimeout(()=>playBeep(660,0.12),140); }
 
-    function playStartChangeSE() {
-      playBeep(880, 0.09);
-    }
-
-    function playEndSE() {
-      playBeep(440, 0.12);
-      setTimeout(() => playBeep(660, 0.12), 140);
-    }
-
-    /* ==== Wake Lock ==== */
-    async function requestWakeLock() {
-      try {
-        if ('wakeLock' in navigator && !wakeLock) {
-          wakeLock = await navigator.wakeLock.request('screen');
-          wakeLock.addEventListener('release', () => {
-            wakeLock = null;
-          });
+    /* ====== Wake control: Wake Lock → NoSleep.js fallback ====== */
+    async function requestWakeLock(){
+      try{
+        if('wakeLock' in navigator && !wakeLock){
+          wakeLock=await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release',()=>{wakeLock=null;});
         }
-      } catch (e) {
-        console.log('WakeLock error', e);
+      }catch(e){ /* iOS Chrome等はここに来ることがある */ }
+    }
+    async function releaseWakeLock(){
+      try{ if(wakeLock){ await wakeLock.release(); wakeLock=null; } }catch(e){}
+    }
+
+    function loadNoSleep(){
+      return new Promise((resolve,reject)=>{
+        if(window.NoSleep) return resolve();
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/nosleep.js@0.12.0/dist/NoSleep.min.js';
+        s.async=true; s.onload=()=>resolve(); s.onerror=reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    async function ensureKeepAwake(){
+      // 1) まず Wake Lock
+      await requestWakeLock();
+      if(wakeLock) return;
+
+      // 2) ダメなら NoSleep.js をロードして有効化（要ユーザー操作内）
+      try{
+        await loadNoSleep();
+        if(window.NoSleep){
+          if(!noSleep) noSleep=new NoSleep();
+          if(!noSleepEnabled){
+            noSleep.enable();     // iOS Chrome対策：無音動画ループ
+            noSleepEnabled=true;
+          }
+        }
+      }catch(e){ /* 失敗したら諦め。OS側の自動ロックに従う */ }
+    }
+
+    async function disableKeepAwake(){
+      await releaseWakeLock();
+      if(noSleep && noSleepEnabled){
+        try{ noSleep.disable(); }catch(e){}
+        noSleepEnabled=false;
       }
     }
 
-    async function releaseWakeLock() {
-      try {
-        if (wakeLock) {
-          await wakeLock.release();
-          wakeLock = null;
-        }
-      } catch (e) {
-        console.log('WakeLock release error', e);
-      }
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && running) {
-        requestWakeLock();
+    document.addEventListener('visibilitychange', ()=>{
+      // 復帰時に必要なら再取得
+      if(document.visibilityState==='visible' && running){
+        ensureKeepAwake();
       }
     });
 
-    /* ==== セッション生成 ==== */
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
+    /* ====== セッション生成 ====== */
+    function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+    function createSessionPoses(){
+      const used=new Set(); const keysResult=new Array(slotDurations.length);
+      (function backtrack(idx){
+        if(idx===slotDurations.length) return true;
+        const all=slotCandidates[idx].slice(); const unique=all.filter(k=>!used.has(k));
+        const pickFrom=unique.length?unique:all; shuffle(pickFrom);
+        for(const key of pickFrom){
+          const was=used.has(key); if(!was) used.add(key);
+          keysResult[idx]=key; if(backtrack(idx+1)) return true; if(!was) used.delete(key);
+        } return false;
+      })(0);
+      return keysResult.map((key,i)=>{const b=poseTypes[key]; return {key,name:b.name,desc:b.desc,duration:slotDurations[i],svg:b.svg};});
     }
 
-    function createSessionPoses() {
-      const used = new Set();
-      const keysResult = new Array(slotDurations.length);
-
-      function backtrack(index) {
-        if (index === slotDurations.length) return true;
-        const all = slotCandidates[index].slice();
-        const unique = all.filter(k => !used.has(k));
-        const pickFrom = unique.length ? unique : all;
-        shuffle(pickFrom);
-        for (const key of pickFrom) {
-          const wasUsed = used.has(key);
-          if (!wasUsed) used.add(key);
-          keysResult[index] = key;
-          if (backtrack(index + 1)) return true;
-          if (!wasUsed) used.delete(key);
-        }
-        return false;
-      }
-
-      backtrack(0);
-
-      return keysResult.map((key, i) => {
-        const base = poseTypes[key];
-        return {
-          key,
-          name: base.name,
-          desc: base.desc,
-          duration: slotDurations[i],
-          svg: base.svg
-        };
-      });
-    }
-
-    /* ==== 表示系 ==== */
-
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-    }
-
-    function renderPoseSequence(currentIndex) {
-      poseSequenceEl.innerHTML = "";
-      const isPrestart = document.body.classList.contains("prestart");
-
-      sessionPoses.forEach((pose, idx) => {
-        const step = document.createElement("div");
-        step.classList.add("pose-step");
-
-        const nameDiv = document.createElement("div");
-        nameDiv.classList.add("pose-step-name");
-        nameDiv.textContent = pose.name.replace(/（.*?）/g, "");
-        step.appendChild(nameDiv);
-
-        const iconWrap = document.createElement("div");
-        iconWrap.classList.add("pose-step-icon");
-        const iconSvg = pose.svg();
-        iconWrap.appendChild(iconSvg);
-        step.appendChild(iconWrap);
-
-        if (!isPrestart) {
-          if (idx < currentIndex) {
-            step.classList.add("done");
-          } else if (idx === currentIndex) {
-            step.classList.add("current");
-          } else if (idx === currentPoseIndex + 1) {
-            step.classList.add("next");
-          }
-        } else {
-          if (idx === 0) step.classList.add("current");
-        }
-
+    /* ====== 表示 ====== */
+    function formatTime(sec){const m=Math.floor(sec/60),s=sec%60;return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+    function renderPoseSequence(currentIndex){
+      poseSequenceEl.innerHTML=""; const isPrestart=document.body.classList.contains("prestart");
+      sessionPoses.forEach((pose,idx)=>{
+        const step=document.createElement("div"); step.classList.add("pose-step");
+        const nameDiv=document.createElement("div"); nameDiv.classList.add("pose-step-name"); nameDiv.textContent=pose.name.replace(/（.*?）/g,""); step.appendChild(nameDiv);
+        const iconWrap=document.createElement("div"); iconWrap.classList.add("pose-step-icon"); const iconSvg=pose.svg(); iconWrap.appendChild(iconSvg); step.appendChild(iconWrap);
+        if(!isPrestart){
+          if(idx<currentIndex) step.classList.add("done");
+          else if(idx===currentIndex) step.classList.add("current");
+          else if(idx===currentIndex+1) step.classList.add("next");
+        }else{ if(idx===0) step.classList.add("current"); }
         poseSequenceEl.appendChild(step);
       });
     }
-
-    function showPose(index) {
-      const pose = sessionPoses[index];
-      poseNameEl.textContent = pose.name;
-      poseDescEl.textContent = pose.desc;
-
-      const remaining = Math.max(totalDuration - elapsedTotal, 0);
-      timerEl.textContent = formatTime(remaining);
-
-      const remainingPose = Math.max(pose.duration - elapsedInPose, 0);
-      subTimerEl.textContent = `この姿勢の残り: ${formatTime(remainingPose)}`;
-
-      const ratio = totalDuration === 0 ? 0 : elapsedTotal / totalDuration;
-      progressInnerEl.style.width = `${ratio * 100}%`;
-
-      illustEl.innerHTML = "";
-      const svg = pose.svg();
-      illustEl.appendChild(svg);
-
+    function showPose(index){
+      const pose=sessionPoses[index];
+      poseNameEl.textContent=pose.name;
+      poseDescEl.textContent=pose.desc;
+      const remaining=Math.max(totalDuration-elapsedTotal,0);
+      timerEl.textContent=formatTime(remaining);
+      const remainPose=Math.max(pose.duration-elapsedInPose,0);
+      subTimerEl.textContent=`この姿勢の残り: ${formatTime(remainPose)}`;
+      const ratio= totalDuration===0 ? 0 : elapsedTotal/totalDuration;
+      progressInnerEl.style.width=`${ratio*100}%`;
+      illustEl.innerHTML=""; illustEl.appendChild(pose.svg());
       renderPoseSequence(index);
     }
 
-    /* ==== タイマー ==== */
-
-    function tick() {
-      if (!running) return;
-
-      elapsedTotal += 1;
-      elapsedInPose += 1;
-
-      if (elapsedTotal >= totalDuration) {
-        clearInterval(timerId);
-        timerId = null;
-        running = false;
-        elapsedTotal = totalDuration;
-        elapsedInPose = sessionPoses[sessionPoses.length - 1].duration;
+    /* ====== タイマー ====== */
+    function tick(){
+      if(!running) return;
+      elapsedTotal+=1; elapsedInPose+=1;
+      if(elapsedTotal>=totalDuration){
+        clearInterval(timerId); timerId=null; running=false;
+        elapsedTotal=totalDuration; elapsedInPose=sessionPoses[sessionPoses.length-1].duration;
         showPose(currentPoseIndex);
-        timerEl.textContent = "00:00";
-        subTimerEl.textContent = "セッション終了";
-        statusEl.textContent = "";
-        statusEl.classList.add("end");
-        playEndSE();
-        releaseWakeLock();
-        return;
+        timerEl.textContent="00:00"; subTimerEl.textContent="セッション終了";
+        statusEl.textContent=""; statusEl.classList.add("end");
+        playEndSE(); disableKeepAwake(); return;
       }
-
-      const currentPose = sessionPoses[currentPoseIndex];
-      if (elapsedInPose >= currentPose.duration && currentPoseIndex < sessionPoses.length - 1) {
-        currentPoseIndex++;
-        elapsedInPose = 0;
-        showPose(currentPoseIndex);
-        playStartChangeSE();
-      } else {
-        showPose(currentPoseIndex);
-      }
+      const currentPose=sessionPoses[currentPoseIndex];
+      if(elapsedInPose>=currentPose.duration && currentPoseIndex<sessionPoses.length-1){
+        currentPoseIndex++; elapsedInPose=0; showPose(currentPoseIndex); playStartChangeSE();
+      }else{ showPose(currentPoseIndex); }
     }
 
-    function initSession() {
-      sessionPoses = createSessionPoses();
-      totalDuration = sessionPoses.reduce((s, p) => s + p.duration, 0);
-      currentPoseIndex = 0;
-      elapsedTotal = 0;
-      elapsedInPose = 0;
-      statusEl.textContent = "";
-      statusEl.classList.remove("end");
+    function initSession(){
+      sessionPoses=createSessionPoses();
+      totalDuration=sessionPoses.reduce((s,p)=>s+p.duration,0);
+      currentPoseIndex=0; elapsedTotal=0; elapsedInPose=0;
+      statusEl.textContent=""; statusEl.classList.remove("end");
       document.body.classList.add("prestart");
       showPose(currentPoseIndex);
     }
 
-    function startCore(isInitial) {
-      if (running || elapsedTotal >= totalDuration) return;
-      running = true;
-      document.body.classList.remove("prestart");
-      if (!timerId) timerId = setInterval(tick, 1000);
-      if (isInitial) playStartChangeSE();
-      requestWakeLock();
+    function startCore(isInitial){
+      if(running || elapsedTotal>=totalDuration) return;
+      running=true; document.body.classList.remove("prestart");
+      if(!timerId) timerId=setInterval(tick,1000);
+      if(isInitial) playStartChangeSE();
+      ensureKeepAwake();
     }
 
-    function start() {
-      if (running || elapsedTotal >= totalDuration) return;
+    function start(){
+      if(running || elapsedTotal>=totalDuration) return;
+      if(!hasStartedOnce && elapsedTotal===0){
+        if(prestartActive) return;
+        if(!sessionPoses.length) initSession();
 
-      if (!hasStartedOnce && elapsedTotal === 0) {
-        if (prestartActive) return;
-        if (!sessionPoses.length) initSession();
-
-        prestartActive = true;
-        prestartRemaining = 10;
-        statusEl.textContent = `開始まで ${prestartRemaining}秒`;
-
-        if (prestartTimerId) clearInterval(prestartTimerId);
-        prestartTimerId = setInterval(() => {
+        prestartActive=true; prestartRemaining=10;
+        statusEl.textContent=`開始まで ${prestartRemaining}秒`;
+        if(prestartTimerId) clearInterval(prestartTimerId);
+        prestartTimerId=setInterval(()=>{
           prestartRemaining--;
-          if (prestartRemaining > 0) {
-            statusEl.textContent = `開始まで ${prestartRemaining}秒`;
-          } else {
-            clearInterval(prestartTimerId);
-            prestartTimerId = null;
-            prestartActive = false;
-            hasStartedOnce = true;
-            statusEl.textContent = "";
+          if(prestartRemaining>0){ statusEl.textContent=`開始まで ${prestartRemaining}秒`; }
+          else{
+            clearInterval(prestartTimerId); prestartTimerId=null; prestartActive=false; hasStartedOnce=true; statusEl.textContent="";
             startCore(true);
           }
-        }, 1000);
-      } else {
-        if (prestartActive) return;
+        },1000);
+      }else{
+        if(prestartActive) return;
         startCore(false);
       }
     }
 
-    function pause() {
-      if (prestartActive) {
-        prestartActive = false;
-        if (prestartTimerId) clearInterval(prestartTimerId);
-        prestartTimerId = null;
-        statusEl.textContent = "一時停止中";
-        return;
+    function pause(){
+      if(prestartActive){
+        prestartActive=false; if(prestartTimerId) clearInterval(prestartTimerId); prestartTimerId=null;
+        statusEl.textContent="一時停止中"; return;
       }
-      running = false;
-      statusEl.textContent = "一時停止中";
+      running=false; statusEl.textContent="一時停止中";
+      // 一時停止中も点灯を維持したいならコメントアウトしない
+      // disableKeepAwake();  // 必要ならここで解除
     }
 
-    function reset() {
-      running = false;
-      if (timerId) clearInterval(timerId);
-      if (prestartTimerId) clearInterval(prestartTimerId);
-      timerId = null;
-      prestartTimerId = null;
-      prestartActive = false;
-      hasStartedOnce = false;
+    function reset(){
+      running=false;
+      if(timerId) clearInterval(timerId);
+      if(prestartTimerId) clearInterval(prestartTimerId);
+      timerId=null; prestartTimerId=null; prestartActive=false; hasStartedOnce=false;
 
-      sessionPoses = [];
-      totalDuration = 0;
-      currentPoseIndex = 0;
-      elapsedTotal = 0;
-      elapsedInPose = 0;
-      statusEl.textContent = "リセット";
-      statusEl.classList.remove("end");
+      sessionPoses=[]; totalDuration=0; currentPoseIndex=0; elapsedTotal=0; elapsedInPose=0;
+      statusEl.textContent="リセット"; statusEl.classList.remove("end");
       document.body.classList.add("prestart");
 
-      releaseWakeLock();
+      disableKeepAwake();
       initSession();
     }
 
-    document.getElementById("start-btn").addEventListener("click", () => {
-      const ctx = getAudioCtx();
-      if (ctx && ctx.state === "suspended") ctx.resume();
+    document.getElementById("start-btn").addEventListener("click",()=>{
+      const ctx=getAudioCtx(); if(ctx && ctx.state==="suspended") ctx.resume();
       start();
     });
+    document.getElementById("pause-btn").addEventListener("click",pause);
+    document.getElementById("reset-btn").addEventListener("click",reset);
 
-    document.getElementById("pause-btn").addEventListener("click", pause);
-    document.getElementById("reset-btn").addEventListener("click", reset);
-
-    /* ==== SVG（シンプルアイコン） ==== */
-
-    function baseSvg() {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 100 100");
-      svg.setAttribute("aria-hidden", "true");
-      return svg;
-    }
-
-    function addCircle(svg, cx, cy, r) {
-      const c = document.createElementNS(svg.namespaceURI, "circle");
-      c.setAttribute("cx", cx);
-      c.setAttribute("cy", cy);
-      c.setAttribute("r", r);
-      c.setAttribute("fill", "#7fd4ff");
-      svg.appendChild(c);
-    }
-
-    function addLine(svg, x1, y1, x2, y2, w = 3) {
-      const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      l.setAttribute("x1", x1);
-      l.setAttribute("y1", y1);
-      l.setAttribute("x2", x2);
-      l.setAttribute("y2", y2);
-      l.setAttribute("stroke", "#7fd4ff");
-      l.setAttribute("stroke-width", w);
-      l.setAttribute("stroke-linecap", "round");
-      svg.appendChild(l);
-    }
-
-    function drawSeatedEasy() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 22, 7);
-      addLine(svg, 50, 30, 50, 50);
-      addLine(svg, 50, 38, 35, 48);
-      addLine(svg, 50, 38, 65, 48);
-      addLine(svg, 40, 50, 32, 64);
-      addLine(svg, 60, 50, 68, 64);
-      addLine(svg, 32, 64, 68, 64);
-      return svg;
-    }
-
-    function drawSeatedEasySoft() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 24, 7);
-      addLine(svg, 50, 31, 50, 52);
-      addLine(svg, 50, 39, 36, 50);
-      addLine(svg, 50, 39, 64, 50);
-      addLine(svg, 42, 52, 34, 64);
-      addLine(svg, 58, 52, 66, 64);
-      addLine(svg, 34, 64, 66, 64);
-      return svg;
-    }
-
-    function drawSeatedHalfLotusRight() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 22, 7);
-      addLine(svg, 50, 30, 50, 50);
-      addLine(svg, 50, 38, 35, 48);
-      addLine(svg, 50, 38, 65, 48);
-      addLine(svg, 40, 50, 60, 60);
-      addLine(svg, 60, 60, 70, 64);
-      addLine(svg, 45, 54, 30, 64);
-      return svg;
-    }
-
-    function drawSeatedHalfLotusLeft() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 22, 7);
-      addLine(svg, 50, 30, 50, 50);
-      addLine(svg, 50, 38, 35, 48);
-      addLine(svg, 50, 38, 65, 48);
-      addLine(svg, 60, 50, 40, 60);
-      addLine(svg, 40, 60, 30, 64);
-      addLine(svg, 55, 54, 70, 64);
-      return svg;
-    }
-
-    function drawSeiza() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 20, 7);
-      addLine(svg, 50, 27, 50, 48);
-      addLine(svg, 50, 34, 40, 44);
-      addLine(svg, 50, 34, 60, 44);
-      addLine(svg, 44, 48, 44, 64);
-      addLine(svg, 56, 48, 56, 64);
-      addLine(svg, 40, 64, 60, 64);
-      return svg;
-    }
-
-    function drawSeizaTall() {
-      const svg = drawSeiza();
-      addLine(svg, 50, 8, 50, 27, 1.5);
-      return svg;
-    }
-
-    function drawLongSitting() {
-      const svg = baseSvg();
-      addCircle(svg, 40, 22, 7);
-      addLine(svg, 40, 29, 40, 48);
-      addLine(svg, 40, 34, 32, 44);
-      addLine(svg, 40, 34, 48, 44);
-      addLine(svg, 40, 48, 70, 48);
-      return svg;
-    }
-
-    function drawCobbler() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 22, 7);
-      addLine(svg, 50, 30, 50, 46);
-      addLine(svg, 42, 46, 35, 60);
-      addLine(svg, 58, 46, 65, 60);
-      addLine(svg, 40, 60, 60, 60);
-      return svg;
-    }
-
-    function drawChilds() {
-      const svg = baseSvg();
-      addCircle(svg, 40, 40, 5);
-      addLine(svg, 45, 40, 60, 40);
-      addLine(svg, 35, 45, 30, 55);
-      addLine(svg, 50, 45, 55, 55);
-      return svg;
-    }
-
-    function drawMountain() {
-      const svg = baseSvg();
-      addCircle(svg, 50, 18, 6);
-      addLine(svg, 50, 24, 50, 52);
-      addLine(svg, 50, 30, 38, 44);
-      addLine(svg, 50, 30, 62, 44);
-      addLine(svg, 50, 52, 42, 74);
-      addLine(svg, 50, 52, 58, 74);
-      return svg;
-    }
-
-    function drawSavasana() {
-      const svg = baseSvg();
-      addCircle(svg, 20, 60, 5);
-      addLine(svg, 25, 60, 60, 60);
-      addLine(svg, 30, 56, 35, 52);
-      addLine(svg, 30, 64, 35, 68);
-      return svg;
-    }
-
-    function drawSavasanaOpen() {
-      const svg = baseSvg();
-      addCircle(svg, 20, 58, 5);
-      addLine(svg, 25, 58, 60, 58);
-      addLine(svg, 30, 52, 40, 46);
-      addLine(svg, 30, 64, 40, 70);
-      return svg;
-    }
-
-    function drawSupineCobbler() {
-      const svg = baseSvg();
-      addCircle(svg, 22, 60, 4);
-      addLine(svg, 26, 60, 46, 60);
-      addLine(svg, 46, 60, 56, 55);
-      addLine(svg, 56, 55, 64, 60);
-      return svg;
-    }
-
-    function drawSupineTwist() {
-      const svg = baseSvg();
-      addCircle(svg, 24, 56, 4);
-      addLine(svg, 28, 56, 44, 56);
-      addLine(svg, 44, 56, 56, 64);
-      return svg;
-    }
-
-    function drawGasRelease() {
-      const svg = baseSvg();
-      addCircle(svg, 30, 54, 4);
-      addLine(svg, 34, 54, 44, 54);
-      addLine(svg, 44, 54, 40, 44);
-      return svg;
-    }
-
-    function drawConstructiveRest() {
-      const svg = baseSvg();
-      addCircle(svg, 20, 60, 4);
-      addLine(svg, 24, 60, 40, 60);
-      addLine(svg, 40, 60, 50, 55);
-      addLine(svg, 50, 55, 60, 55);
-      return svg;
-    }
-
-    function drawBridge() {
-      const svg = baseSvg();
-      addCircle(svg, 24, 60, 4);
-      addLine(svg, 28, 60, 40, 55);
-      addLine(svg, 40, 55, 56, 55);
-      addLine(svg, 56, 55, 64, 60);
-      return svg;
-    }
-
-    function drawTableTop() {
-      const svg = baseSvg();
-      addLine(svg, 30, 50, 60, 50);
-      addLine(svg, 30, 50, 30, 65);
-      addLine(svg, 60, 50, 60, 65);
-      addCircle(svg, 28, 44, 3);
-      return svg;
-    }
-
-    function drawPuppy() {
-      const svg = baseSvg();
-      addLine(svg, 30, 50, 60, 50);
-      addLine(svg, 30, 50, 30, 65);
-      addLine(svg, 60, 50, 70, 60);
-      addCircle(svg, 32, 44, 3);
-      return svg;
-    }
-
-    function drawSideRest() {
-      const svg = baseSvg();
-      addCircle(svg, 30, 55, 5);
-      addLine(svg, 35, 55, 55, 60);
-      addLine(svg, 40, 52, 34, 48);
-      addLine(svg, 40, 62, 34, 68);
-      return svg;
-    }
-
-    function drawFetalSide() {
-      const svg = baseSvg();
-      addCircle(svg, 32, 54, 5);
-      addLine(svg, 37, 56, 48, 60);
-      addLine(svg, 48, 60, 52, 64);
-      addLine(svg, 30, 58, 26, 63);
-      return svg;
-    }
+    /* ====== SVGアイコン（簡易） ====== */
+    function baseSvg(){const s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("viewBox","0 0 100 100"); s.setAttribute("aria-hidden","true"); return s}
+    function addCircle(svg,cx,cy,r){const c=document.createElementNS(svg.namespaceURI,"circle"); c.setAttribute("cx",cx); c.setAttribute("cy",cy); c.setAttribute("r",r); c.setAttribute("fill","#7fd4ff"); svg.appendChild(c)}
+    function addLine(svg,x1,y1,x2,y2,w=3){const l=document.createElementNS(svg.namespaceURI,"line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke","#7fd4ff"); l.setAttribute("stroke-width",w); l.setAttribute("stroke-linecap","round"); svg.appendChild(l)}
+    function drawSeatedEasy(){const s=baseSvg(); addCircle(s,50,22,7); addLine(s,50,30,50,50); addLine(s,50,38,35,48); addLine(s,50,38,65,48); addLine(s,40,50,32,64); addLine(s,60,50,68,64); addLine(s,32,64,68,64); return s}
+    function drawSeatedEasySoft(){const s=baseSvg(); addCircle(s,50,24,7); addLine(s,50,31,50,52); addLine(s,50,39,36,50); addLine(s,50,39,64,50); addLine(s,42,52,34,64); addLine(s,58,52,66,64); addLine(s,34,64,66,64); return s}
+    function drawSeatedHalfLotusRight(){const s=baseSvg(); addCircle(s,50,22,7); addLine(s,50,30,50,50); addLine(s,50,38,35,48); addLine(s,50,38,65,48); addLine(s,40,50,60,60); addLine(s,60,60,70,64); addLine(s,45,54,30,64); return s}
+    function drawSeatedHalfLotusLeft(){const s=baseSvg(); addCircle(s,50,22,7); addLine(s,50,30,50,50); addLine(s,50,38,35,48); addLine(s,50,38,65,48); addLine(s,60,50,40,60); addLine(s,40,60,30,64); addLine(s,55,54,70,64); return s}
+    function drawSeiza(){const s=baseSvg(); addCircle(s,50,20,7); addLine(s,50,27,50,48); addLine(s,50,34,40,44); addLine(s,50,34,60,44); addLine(s,44,48,44,64); addLine(s,56,48,56,64); addLine(s,40,64,60,64); return s}
+    function drawSeizaTall(){const s=drawSeiza(); addLine(s,50,8,50,27,1.5); return s}
+    function drawLongSitting(){const s=baseSvg(); addCircle(s,40,22,7); addLine(s,40,29,40,48); addLine(s,40,34,32,44); addLine(s,40,34,48,44); addLine(s,40,48,70,48); return s}
+    function drawCobbler(){const s=baseSvg(); addCircle(s,50,22,7); addLine(s,50,30,50,46); addLine(s,42,46,35,60); addLine(s,58,46,65,60); addLine(s,40,60,60,60); return s}
+    function drawChilds(){const s=baseSvg(); addCircle(s,40,40,5); addLine(s,45,40,60,40); addLine(s,35,45,30,55); addLine(s,50,45,55,55); return s}
+    function drawMountain(){const s=baseSvg(); addCircle(s,50,18,6); addLine(s,50,24,50,52); addLine(s,50,30,38,44); addLine(s,50,30,62,44); addLine(s,50,52,42,74); addLine(s,50,52,58,74); return s}
+    function drawSavasana(){const s=baseSvg(); addCircle(s,20,60,5); addLine(s,25,60,60,60); addLine(s,30,56,35,52); addLine(s,30,64,35,68); return s}
+    function drawSavasanaOpen(){const s=baseSvg(); addCircle(s,20,58,5); addLine(s,25,58,60,58); addLine(s,30,52,40,46); addLine(s,30,64,40,70); return s}
+    function drawSupineCobbler(){const s=baseSvg(); addCircle(s,22,60,4); addLine(s,26,60,46,60); addLine(s,46,60,56,55); addLine(s,56,55,64,60); return s}
+    function drawSupineTwist(){const s=baseSvg(); addCircle(s,24,56,4); addLine(s,28,56,44,56); addLine(s,44,56,56,64); return s}
+    function drawGasRelease(){const s=baseSvg(); addCircle(s,30,54,4); addLine(s,34,54,44,54); addLine(s,44,54,40,44); return s}
+    function drawConstructiveRest(){const s=baseSvg(); addCircle(s,20,60,4); addLine(s,24,60,40,60); addLine(s,40,60,50,55); addLine(s,50,55,60,55); return s}
+    function drawBridge(){const s=baseSvg(); addCircle(s,24,60,4); addLine(s,28,60,40,55); addLine(s,40,55,56,55); addLine(s,56,55,64,60); return s}
+    function drawTableTop(){const s=baseSvg(); addLine(s,30,50,60,50); addLine(s,30,50,30,65); addLine(s,60,50,60,65); addCircle(s,28,44,3); return s}
+    function drawPuppy(){const s=baseSvg(); addLine(s,30,50,60,50); addLine(s,30,50,30,65); addLine(s,60,50,70,60); addCircle(s,32,44,3); return s}
+    function drawSideRest(){const s=baseSvg(); addCircle(s,30,55,5); addLine(s,35,55,55,60); addLine(s,40,52,34,48); addLine(s,40,62,34,68); return s}
+    function drawFetalSide(){const s=baseSvg(); addCircle(s,32,54,5); addLine(s,37,56,48,60); addLine(s,48,60,52,64); addLine(s,30,58,26,63); return s}
 
     // 起動
     initSession();
