@@ -34,6 +34,22 @@
     @keyframes bg2{0%{transform:translate3d(-8px,6px,0) rotate(.2deg)}50%{transform:translate3d(6px,-10px,0) rotate(-.2deg)}100%{transform:translate3d(10px,8px,0) rotate(0)}}
     body>*{position:relative;z-index:1}
 
+	#version-badge{
+	  position: fixed;
+	  top: calc(env(safe-area-inset-top, 0px) + 8px);
+	  left: calc(env(safe-area-inset-left, 0px) + 8px);
+	  padding: 6px 8px;
+	  font-size: 11px; line-height: 1; letter-spacing: .02em;
+	  color: #9ba8b5;
+	  background: rgba(17,23,38,.65);
+	  border: 1px solid #2a3440;
+	  border-radius: 999px;
+	  backdrop-filter: blur(2px);
+	  -webkit-backdrop-filter: blur(2px);
+	  pointer-events: none; user-select: none;
+	  z-index: 3;
+	}
+	
     #pose-name{font-size:clamp(18px,2.4vw,22px);margin-bottom:4px}
     #pose-desc{font-size:clamp(13px,2.4vw,18px);line-height:1.5;color:var(--fg-sub);margin-bottom:8px;padding:0 4px}
     #timer{font-size:clamp(26px,4vw,34px);font-variant-numeric:tabular-nums;margin-bottom:0}
@@ -71,6 +87,7 @@
   </style>
 </head>
 <body>
+  <div id="version-badge" aria-label="version"></div>
   <div id="pose-name"></div>
   <div id="pose-desc"></div>
   <div id="timer">45:00</div>
@@ -93,6 +110,8 @@
   </div>
 
   <script>
+    const APP_VERSION = "v0.9.0";
+    
     /* ====== ポーズ定義（省略なく全部このファイル内） ====== */
     const poseTypes = {
       easy:{name:"安楽座",desc:"楽なあぐらで座り、全身の力を抜いて呼吸を観察。",svg:drawSeatedEasy},
@@ -138,6 +157,7 @@
     let noSleep=null;            // NoSleep.js instance
     let noSleepEnabled=false;
 
+    document.getElementById("version-badge").textContent = APP_VERSION;
     const poseNameEl=document.getElementById("pose-name");
     const poseDescEl=document.getElementById("pose-desc");
     const timerEl=document.getElementById("timer");
